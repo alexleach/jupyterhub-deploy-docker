@@ -11,7 +11,7 @@ TIMEOUT = 120
 @pytest.fixture(scope="session")
 def api_request():
     def _api_request(method, path, **kwargs):
-        hub_url = getenv("HUB_URL", "http://localhost:8000").rstrip("/")
+        hub_url = getenv("HUB_URL", "http://hub.localhost").rstrip("/")
         m = getattr(requests, method)
         url = f"{hub_url}{path}"
         r = m(url, headers={"Authorization": "token test-token-123"}, **kwargs)

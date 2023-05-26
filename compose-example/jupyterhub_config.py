@@ -17,12 +17,13 @@ c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
 c.DockerSpawner.image = os.environ["DOCKER_NOTEBOOK_IMAGE"]
 
 # The public facing URL of the whole JupyterHub application.
+# Set this to a name you have registered in DNS to point to the traefik server.
 #
-#          This is the address on which the proxy will bind.
+#          This is the address on which the traefik proxy will bind.
 #          Sets protocol, ip, base_url
 #  Default: 'http://:8000'
 # (dev note) This will be copied to c.Proxy.public_url
-c.JupyterHub.bind_url = "https://hub.example.com"
+c.JupyterHub.bind_url = "https://hub.localhost"
 
 # Whether to clean up the jupyterhub-managed traefik configuration
 # when the Hub shuts down.
@@ -49,7 +50,7 @@ c.JupyterHub.hub_bind_url = "http://hub:8000"
 #
 # Default: = '/'
 #
-c.JupyterHub.hub_routespec = "hub.example.com/"
+c.JupyterHub.hub_routespec = "hub.localhost/"
 
 # jupyterhub will only configure path-based routing by default. To stop
 # traefik from routing all requests to jupyterhub, a subdomain host should be
@@ -64,7 +65,7 @@ c.JupyterHub.hub_routespec = "hub.example.com/"
 # e.g. A user of "jbloggs", logging into a hub with a subdomain_host of
 # "https://hub.example.com", will be redirected to their notebook at
 # https://jbloggs.hub.example.com
-c.JupyterHub.subdomain_host = "https://hub.example.com"
+c.JupyterHub.subdomain_host = "https://hub.localhost"
 
 # Set the log level by value or name.
 #  Choices: any of [0, 10, 20, 30, 40, 50, 'DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
