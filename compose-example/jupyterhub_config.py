@@ -23,7 +23,9 @@ c.DockerSpawner.image = os.environ["DOCKER_NOTEBOOK_IMAGE"]
 #          Sets protocol, ip, base_url
 #  Default: 'http://:8000'
 # (dev note) This will be copied to c.Proxy.public_url
-c.JupyterHub.bind_url = "https://hub.localhost"
+#
+# Set this to https in production!
+c.JupyterHub.bind_url = "http://hub.localhost"
 
 # Whether to clean up the jupyterhub-managed traefik configuration
 # when the Hub shuts down.
@@ -50,7 +52,7 @@ c.JupyterHub.hub_bind_url = "http://hub:8000"
 #
 # Default: = '/'
 #
-c.JupyterHub.hub_routespec = "hub.localhost/"
+c.JupyterHub.hub_routespec = "hub.localhost"
 
 # jupyterhub will only configure path-based routing by default. To stop
 # traefik from routing all requests to jupyterhub, a subdomain host should be
@@ -62,10 +64,14 @@ c.JupyterHub.hub_routespec = "hub.localhost/"
 # If a subdomain_host is configured, each user container will be accessible at:-
 #   https://<user>.<subdomain_host>
 #
+# So a wildcard DNS entry should be configured for subdomains of the subdomain host.
+#
 # e.g. A user of "jbloggs", logging into a hub with a subdomain_host of
 # "https://hub.example.com", will be redirected to their notebook at
 # https://jbloggs.hub.example.com
-c.JupyterHub.subdomain_host = "https://hub.localhost"
+#
+# Set this to https in production!
+c.JupyterHub.subdomain_host = "http://hub.localhost"
 
 # Set the log level by value or name.
 #  Choices: any of [0, 10, 20, 30, 40, 50, 'DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
@@ -89,6 +95,12 @@ c.TraefikFileProviderProxy.traefik_api_url = "https://traefik"
 c.TraefikFileProviderProxy.traefik_api_validate_cert = False
 c.TraefikFileProviderProxy.traefik_api_username = "admin"
 c.TraefikFileProviderProxy.traefik_api_password = "password"
+
+# Match the entrypoint to that listed in traefik.yaml.
+# Use http for testing purposes only
+#
+# Default: "https"
+c.TraefikFileProviderProxy.traefik_entrypoint = "web"
 
 # Traefik can automatically retrieve certificates for each user container from
 # an ACME provider (e.g. Let's Encrypt), For an example, read the comments in
