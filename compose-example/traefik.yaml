@@ -11,11 +11,13 @@ providers:
 entryPoints:
   web:
     address: :80
-    http:
-      redirections:
-        entryPoint:
-          to: websecure
-          scheme: https
+    # When a certificate resolver is properly configured, enable
+    # redirecting of http to https
+    #http:
+    #  redirections:
+    #    entryPoint:
+    #      to: websecure
+    #      scheme: https
 
   websecure:
     address: :443
