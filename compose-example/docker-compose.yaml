@@ -4,7 +4,10 @@ services:
   # The JupyterHub service configuration {
   hub:
     image: jupyterhub-traefik-proxy:example
-    build: .
+    build:
+      context: .
+      args:
+        JUPYTERHUB_VERSION: latest
     container_name: jupyterhub
 
     # Start traefik first
@@ -13,16 +16,16 @@ services:
 
     volumes:
       # Jupyterhub configuration file
-      - ./jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py:ro
+      - "./jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py:ro"
 
       # Shared volume for the file provider's dynamic config
-      - traefik-dynamic-config:/var/run/traefik/
+      - "traefik-dynamic-config:/var/run/traefik/"
 
       # jupyterhub's DockerSpawner needs read access to the docker socket.
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
       # Volume to persist the jupyterhub sqlite database
-      - data:/srv/jupyterhub
+      - "data:/srv/jupyterhub"
 
     networks:
       - traefik_internal
