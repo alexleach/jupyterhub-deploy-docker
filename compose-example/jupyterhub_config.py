@@ -1,27 +1,20 @@
-# Configuration file for jupyterhub.
+# Copyright (c) Jupyter Development Team.
+# Distributed under the terms of the Modified BSD License.
+
+# Configuration file for JupyterHub
 import os
 
 c = get_config()  # noqa
 
-# Class for authenticating users.
-#
-# One of the benefits of using jupyterhub, is its ability to use a central
-# Identity Provider and Authentication service.
-#
-#  Currently installed:
-#    - default: jupyterhub.auth.PAMAuthenticator
-#    - dummy: jupyterhub.auth.DummyAuthenticator
-#    - null: jupyterhub.auth.NullAuthenticator
-#    - pam: jupyterhub.auth.PAMAuthenticator
-#  Default: 'jupyterhub.auth.PAMAuthenticator'
-#
-# Also, check the OAuth authenticators, at:-
-#  https://oauthenticator.readthedocs.io/en/latest/tutorials/provider-specific-setup/index.html
-#
-# The 'dummy' authenticator will allow any user to login and launch a jupyter
-# notebook, so should definitely NOT BE USED in production or on publicly
-# accessible servers!
-c.JupyterHub.authenticator_class = "dummy"
+# We rely on environment variables to configure JupyterHub so that we
+# avoid having to rebuild the JupyterHub container every time we change a
+# configuration parameter.
+
+# Spawn single-user servers as Docker containers
+c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
+
+# Spawn containers from this image
+c.DockerSpawner.image = os.environ["DOCKER_NOTEBOOK_IMAGE"]
 
 # The public facing URL of the whole JupyterHub application.
 #
@@ -35,17 +28,7 @@ c.JupyterHub.bind_url = "https://hub.example.com"
 # when the Hub shuts down.
 c.JupyterHub.cleanup_proxy = True
 
-# The URL on which the Hub will listen. This is a private URL for internal
-#  communication. Typically set in combination with hub_connect_url. If a unix
-#  socket, hub_connect_url **must** also be set.
-#
-#  For example:
-#
-#      "http://127.0.0.1:8081"
-#      "unix+http://%2Fsrv%2Fjupyterhub%2Fjupyterhub.sock"
-#
-#  .. versionadded:: 0.9
-#  Default: ''
+# The URL on which the Hub will listen.
 #
 # jupyterhub_traefik_proxy will configure the 'service' url in traefik, so this
 # needs to be accessible from traefik. By default, jupyterhub will bind to
@@ -68,6 +51,21 @@ c.JupyterHub.hub_bind_url = "http://hub:8000"
 #
 c.JupyterHub.hub_routespec = "hub.example.com/"
 
+# jupyterhub will only configure path-based routing by default. To stop
+# traefik from routing all requests to jupyterhub, a subdomain host should be
+# configured.
+# That is, by default, jupyterhub will create a router rule of just PathPrefix(`/`).
+# This could conflict with other traefik router rules, or just be too easily
+# accessible.
+#
+# If a subdomain_host is configured, each user container will be accessible at:-
+#   https://<user>.<subdomain_host>
+#
+# e.g. A user of "jbloggs", logging into a hub with a subdomain_host of
+# "https://hub.example.com", will be redirected to their notebook at
+# https://jbloggs.hub.example.com
+c.JupyterHub.subdomain_host = "https://hub.example.com"
+
 # Set the log level by value or name.
 #  Choices: any of [0, 10, 20, 30, 40, 50, 'DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
 #  Default: 30
@@ -77,7 +75,7 @@ c.JupyterHub.log_level = "DEBUG"
 # Use jupyterhub_traefik_proxy's `TraefikFileProviderProxy` class
 c.JupyterHub.proxy_class = "traefik_file"
 
-# JupyterHub shouldn't start the proxy, docker-compose will launch it
+# JupyterHub shouldn't start traefik, docker-compose will launch it
 c.TraefikFileProviderProxy.should_start = False
 
 # The configuration file jupyterhub will write to, and traefik will watch
@@ -100,29 +98,22 @@ c.TraefikFileProviderProxy.traefik_api_password = "password"
 
 # The class to use for spawning single-user servers.
 #
-#  Currently installed:
-#    - default: jupyterhub.spawner.LocalProcessSpawner
-#    - localprocess: jupyterhub.spawner.LocalProcessSpawner
-#    - simple: jupyterhub.spawner.SimpleLocalProcessSpawner
-#  Default: 'jupyterhub.spawner.LocalProcessSpawner'
-#
 # Launch each user's notebook server in a separate container.
 c.JupyterHub.spawner_class = "dockerspawner.DockerSpawner"
-
-# Base Image to use for user notebook containers. You can build your own,
-# or use an image name and tag from hub.docker.com, or another image repository
-c.DockerSpawner.image = "jupyterhub/singleuser"
 
 # Explicitly set notebook directory because we'll be mounting a host volume to
 # it.  Most jupyter/docker-stacks *-notebook images run the Notebook server as
 # user `jovyan`, and set the notebook directory to `/home/jovyan/work`.
 # We follow the same convention.
-notebook_dir = os.environ.get("DOCKER_NOTEBOOK_DIR") or "/home/jovyan/work"
+notebook_dir = os.environ.get("DOCKER_NOTEBOOK_DIR", "/home/jovyan/work")
 c.DockerSpawner.notebook_dir = notebook_dir
 
-# Create per-user docker volumes, mounted to the user's notebook_dir in the
-# container
+# Mount the real user's Docker volume on the host to the notebook user's
+# notebook directory in the container
 c.DockerSpawner.volumes = {"jupyterhub-user-{username}": notebook_dir}
+
+# Remove containers once they are stopped
+c.DockerSpawner.remove = True
 
 # The docker network name that single-user notebook containers should attach to
 c.DockerSpawner.network_name = "traefik_internal"
@@ -133,17 +124,14 @@ c.DockerSpawner.network_name = "traefik_internal"
 # Otherwise, when logging in, there will always be 302 redirects to http://
 c.JupyterHub.ssl_cert = "externally managed"
 
-# jupyterhub will only configure path-based routing by default. To stop
-# traefik from routing all requests to jupyterhub, a subdomain host should be
-# configured.
-# That is, by default, jupyterhub will create a router rule of just PathPrefix(`/`).
-# This could conflict with other traefik router rules, or just be too easily
-# accessible.
-#
-# If a subdomain_host is configured, each user container will be accessible at:-
-#   https://<user>.<subdomain_host>
-#
-# e.g. A user of "jbloggs", logging into a hub with a subdomain_host of
-# "https://hub.example.com", will be redirected to their notebook at
-# https://jbloggs.hub.example.com
-c.JupyterHub.subdomain_host = "https://hub.example.com"
+
+# Authenticate users with Native Authenticator
+c.JupyterHub.authenticator_class = "nativeauthenticator.NativeAuthenticator"
+
+# Allow anyone to sign-up without approval
+c.NativeAuthenticator.open_signup = True
+
+# Allowed admins
+admin = os.environ.get("JUPYTERHUB_ADMIN")
+if admin:
+    c.Authenticator.admin_users = [admin]
