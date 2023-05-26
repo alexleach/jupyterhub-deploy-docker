@@ -30,6 +30,7 @@ jobs:
       matrix:
         example:
           - basic-example
+          - compose-example
 
     steps:
       - uses: actions/checkout@v3
