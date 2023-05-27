@@ -90,7 +90,7 @@ c.TraefikFileProviderProxy.should_start = False
 c.TraefikFileProviderProxy.dynamic_config_file = "/var/run/traefik/jupyterhub.yaml"
 
 # Don't try and configure traefik's API and dashboard router (already configured)
-#c.TraefikFileProviderProxy.enable_setup_dynamic_config = False
+# c.TraefikFileProviderProxy.enable_setup_dynamic_config = False
 
 # Settings jupyterhub_traefik_proxy will use to access the traefik API
 # These must match traefik's dynamic configuration (check the labels in
@@ -108,7 +108,7 @@ c.TraefikFileProviderProxy.traefik_api_password = "password"
 # The entry point must exist in the static configuration file (traefik.yaml),
 # and correspond to the traefik_api_url, above.
 # Default: auth_api
-#c.TraefikFileProviderProxy.traefik_api_entrypoint = "websecure"
+# c.TraefikFileProviderProxy.traefik_api_entrypoint = "websecure"
 
 # Match the entrypoint to that listed in traefik.yaml.
 # Use http for testing purposes only
@@ -156,7 +156,7 @@ c.JupyterHub.cookie_secret_file = "/srv/jupyterhub/jupyterhub_cookie_secret"
 c.JupyterHub.db_url = "sqlite:////srv/jupyterhub/jupyterhub.sqlite"
 
 # Allow cross-site requests. Set to False in production (the default).
-#c.NotebookApp.disable_check_xsrf = True
+# c.NotebookApp.disable_check_xsrf = True
 
 # Authenticate users with Native Authenticator
 c.JupyterHub.authenticator_class = "nativeauthenticator.NativeAuthenticator"
