@@ -65,32 +65,6 @@ services:
       # Traefik needs read-only access to the docker API socket
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-# Docker labels are a nice way to add settings to traefik's dynamic
-# configuration.
-
-#   labels:
-#
-#      # Tell traefik to enable the rules defined in the below labels.
-#      - "traefik.enable=true"
-#
-#      # Dashboard configuration
-#      - "traefik.http.routers.dashboard.entryPoints=websecure"
-#
-#      # Router rule for requests to the api service. The 'Host' rule must match the following in
-#      # jupyterhub_config.py:-
-#      #   c.TraefikFileProviderProxy.traefik_api_url = "https://traefik"
-#      - "traefik.http.routers.dashboard.rule=Host(`traefik`) && PathPrefix(`/api`, `/dashboard`)"
-#      - "traefik.http.routers.dashboard.service=api@internal"
-#
-#      # Connections to the dashboard and api should be encrypted
-#      - "traefik.http.routers.dashboard.tls=true"
-#
-#      # Users should be authorised to access the dashboard and api
-#      - "traefik.http.routers.dashboard.middlewares=dashboard-auth"
-#
-#      # User: "admin". Password: "password". (N.B. Each $ char must be escaped, with an extra $)
-#      - "traefik.http.middlewares.dashboard-auth.basicauth.users=admin:$$apr1$$uqxc0z9g$$ukB361ceL17eKK7gBZSkG1"
-
     networks:
       - default
       - traefik_internal
