@@ -12,6 +12,7 @@ TIMEOUT = 120
 def api_request():
     client = requests.session()
     data = {}
+
     def _api_request(method, path, **kwargs):
         hub_url = getenv("HUB_URL", "http://hub.localhost").rstrip("/")
         m = getattr(client, method)
