@@ -30,7 +30,7 @@ jobs:
       matrix:
         example:
           - basic-example
-          - compose-example
+          - traefik-example
 
     steps:
       - uses: actions/checkout@v3

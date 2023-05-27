@@ -30,8 +30,9 @@ c.JupyterHub.bind_url = "http://hub.localhost"
 # Whether to clean up the jupyterhub-managed traefik configuration
 # when the Hub shuts down.
 c.JupyterHub.cleanup_proxy = True
+c.JupyterHub.cleanup_servers = True
 
-# The URL on which the Hub will listen.
+# The internal URL on which the Hub will listen.
 #
 # jupyterhub_traefik_proxy will configure the 'service' url in traefik, so this
 # needs to be accessible from traefik. By default, jupyterhub will bind to
@@ -39,7 +40,7 @@ c.JupyterHub.cleanup_proxy = True
 c.JupyterHub.hub_bind_url = "http://hub:8000"
 
 # This sets traefik's router rule for routing traffic to the jupyterhub
-# instance.
+# instance. It can be a host, a path, or a host with path prefix.
 #
 # Typically, you'll want a traefik Host-based configuration rule, e.g.:-
 #   traefik.http.routers.jupyterhub.rule=Host(`hub.example.com`)
@@ -88,13 +89,26 @@ c.TraefikFileProviderProxy.should_start = False
 # The configuration file jupyterhub will write to, and traefik will watch
 c.TraefikFileProviderProxy.dynamic_config_file = "/var/run/traefik/jupyterhub.yaml"
 
+# Don't try and configure traefik's API and dashboard router (already configured)
+#c.TraefikFileProviderProxy.enable_setup_dynamic_config = False
+
 # Settings jupyterhub_traefik_proxy will use to access the traefik API
 # These must match traefik's dynamic configuration (check the labels in
-# docker-compose.yaml)
-c.TraefikFileProviderProxy.traefik_api_url = "https://traefik"
+# docker-compose.yaml).
+#
+# Currently, as of version 1.0.1, jupyterhub-traefik-proxy must manage the
+# traefik API router and endpoint.
+#
+# [PR #210](https://github.com/jupyterhub/traefik-proxy/pull/210) addresses this,
+# allowing pre-configured traefik API endpoints.
+c.TraefikFileProviderProxy.traefik_api_url = "http://traefik:8080"
 c.TraefikFileProviderProxy.traefik_api_validate_cert = False
 c.TraefikFileProviderProxy.traefik_api_username = "admin"
 c.TraefikFileProviderProxy.traefik_api_password = "password"
+# The entry point must exist in the static configuration file (traefik.yaml),
+# and correspond to the traefik_api_url, above.
+# Default: auth_api
+#c.TraefikFileProviderProxy.traefik_api_entrypoint = "websecure"
 
 # Match the entrypoint to that listed in traefik.yaml.
 # Use http for testing purposes only
@@ -135,13 +149,20 @@ c.DockerSpawner.network_name = "traefik_internal"
 # value. (This gets around a validate rule on 'proxy.bind_url', which
 # forces redirects to 'http', unless there is a value in ssl_cert).
 # Otherwise, when logging in, there will always be 302 redirects to http://
-c.JupyterHub.ssl_cert = "externally managed"
+# c.JupyterHub.ssl_cert = "externally managed"
 
+# Persist hub data on volume mounted inside container
+c.JupyterHub.cookie_secret_file = "/srv/jupyterhub/jupyterhub_cookie_secret"
+c.JupyterHub.db_url = "sqlite:////srv/jupyterhub/jupyterhub.sqlite"
+
+# Allow cross-site requests. Set to False in production (the default).
+#c.NotebookApp.disable_check_xsrf = True
 
 # Authenticate users with Native Authenticator
 c.JupyterHub.authenticator_class = "nativeauthenticator.NativeAuthenticator"
 
 # Allow anyone to sign-up without approval
+# Probably want to turn this off in production
 c.NativeAuthenticator.open_signup = True
 
 # Allowed admins

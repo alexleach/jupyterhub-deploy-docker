@@ -10,7 +10,8 @@ providers:
 # Listen on ports 80 and 443, redirecting all http connections to https
 entryPoints:
   web:
-    address: :80
+    address: :80/tcp
+
     # When a certificate resolver is properly configured, enable
     # redirecting of http to https
     #http:
@@ -19,16 +20,21 @@ entryPoints:
     #      to: websecure
     #      scheme: https
 
-  websecure:
-    address: :443
+  # Listen on port 443 after configuring a certificate resolver
+  #websecure:
+  #  address: :443/tcp
 
 # API and dashboard configuration
+# The API is necessary. Adding insecure sets up a default
+# entrypoint for the API, at http://traefik:8080
 api:
   dashboard: true
+  insecure: true
 
 # Set log level to DEBUG, while testing
 log:
   level: DEBUG
+
 #
 # What a Lets Encrypt Certificate Resolver might look like:-
 #
